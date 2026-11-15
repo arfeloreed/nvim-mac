@@ -1,6 +1,6 @@
 # Gabay sa Aking Neovim Setup
 
-Huling inayos: 2026-11-15. Neovim version: 0.11.6 (naka-install gamit ang Homebrew).
+Huling inayos: 2026-11-16. Neovim 0.11.6 (naka-install gamit ang Homebrew), sa MacBook Pro na may WezTerm na terminal.
 
 Ito ang listahan ng lahat ng naka-install sa Neovim ko, kung para saan ang bawat isa, at lahat ng shortcut na dapat kong tandaan.
 
@@ -16,6 +16,7 @@ Ito ang listahan ng lahat ng naka-install sa Neovim ko, kung para saan ang bawat
 | Sarili kong setting (line number, tab, at iba pa) | `~/.config/nvim/lua/reed/settings.lua` |
 | Isang file bawat plugin | `~/.config/nvim/lua/plugins/` |
 | Mga test ng setting | `~/.config/nvim/tests/` |
+| Mga tagubilin para kay Claude (wala sa git) | `~/.config/nvim/CLAUDE.md` |
 | Listahan ng eksaktong bersyon ng bawat plugin | `~/.config/nvim/lazy-lock.json` |
 | Mismong kopya ng mga plugin (dina-download dito) | `~/.local/share/nvim/lazy/` |
 | Mga language server, formatter at linter (galing Mason) | `~/.local/share/nvim/mason/` |
@@ -55,19 +56,14 @@ Lalabas ang window ng Lazy (ang tagapamahala ng mga plugin). Sa loob nito:
 | `?` | Ipakita ang tulong |
 | `q` | Isara ang window |
 
-**Bago mag-update, gumawa muna ng kopya ng listahan ng bersyon.** Matagal nang hindi na-update ang setup na ito (Enero 2025), kaya posibleng may masira. Sa terminal:
+**Kapag may nasira pagkatapos mag-update:** naka-git ang folder na ito, kaya nandoon pa ang dating listahan ng bersyon (`lazy-lock.json`). Sa terminal:
 
 ```
-cp ~/.config/nvim/lazy-lock.json ~/.config/nvim/lazy-lock.backup.json
+cd ~/.config/nvim
+git restore lazy-lock.json
 ```
 
-Kapag may nasira pagkatapos mag-update:
-
-```
-cp ~/.config/nvim/lazy-lock.backup.json ~/.config/nvim/lazy-lock.json
-```
-
-Tapos buksan ang `:Lazy` at pindutin ang `R`. Babalik ang lahat sa dati.
+Tapos buksan ang `:Lazy` at pindutin ang `R`. Babalik ang lahat ng plugin sa dati. Kapag maayos ang update, i-commit ang bagong `lazy-lock.json`.
 
 ### 2.2 Mga language server, formatter at linter: ang Mason window
 
@@ -82,7 +78,7 @@ Tapos buksan ang `:Lazy` at pindutin ang `R`. Babalik ang lahat sa dati.
 | `i` | Install ang nakaturo |
 | `X` | Uninstall ang nakaturo |
 | `C` | Tingnan kung alin ang luma na |
-| `Enter` | Ipakita ang detalye ng nakaturo |
+| `Return` | Ipakita ang detalye ng nakaturo |
 | `g?` | Ipakita ang tulong |
 | `q` | Isara |
 
@@ -107,18 +103,61 @@ Kapag `[INFO] all checks passed` at `5 of 5 cases passed`, ayos ang lahat. Ang b
 
 ---
 
-## 3. Paano basahin ang mga shortcut sa gabay na ito
+## 3. Paano basahin ang mga shortcut (para sa MacBook)
 
-- **Leader key = Space bar.** Kapag nakasulat na `Space ff`, ibig sabihin: pindutin ang Space, bitawan, tapos `f`, tapos `f`.
-- `Ctrl+s` = pindutin nang sabay ang Ctrl at `s`.
-- `Alt+1` = sa Mac, ang **Option** key at `1`. Gamitin ang kaliwang Option key. Kung hindi gumana, baka gumagawa ng espesyal na letra ang Option key sa terminal.
-- Mga mode ng Neovim:
-  - **Normal mode**: para gumalaw at mag-utos. Dito ka pagbukas. `Esc` para bumalik dito.
-  - **Insert mode**: para mag-type. Pumasok gamit ang `i`.
-  - **Visual mode**: para pumili ng text. Pumasok gamit ang `v` (letra), `V` (buong linya), o `Ctrl+v` (kahon).
-  - **Command mode**: nagsisimula sa `:`, halimbawa `:w`.
+Nakasulat ang lahat ng shortcut dito gamit ang pangalan ng key sa MacBook.
+
+| Nakasulat dito | Key sa MacBook | Simbolo | Paalala |
+| --- | --- | --- | --- |
+| `Control` | control | ⌃ | Kaliwang ibaba ng keyboard, katabi ng fn. **Ito ang gamit ng Neovim, hindi ang Command.** |
+| `Option` | option | ⌥ | Gamitin ang **kaliwang** Option. Ang kanang Option ay para sa espesyal na letra (gaya ng ñ). |
+| `Command` | command | ⌘ | Hindi ito ginagamit ng Neovim. Para ito sa WezTerm (tingnan sa ibaba). |
+| `Shift` | shift | ⇧ | |
+| `Return` | return | ↩ | Ito ang "Enter" sa Windows. |
+| `Delete` | delete | ⌫ | Nagbubura pakaliwa. Ito ang "Backspace" sa Windows. |
+| `Esc` | esc | ⎋ | Kaliwang itaas ng keyboard. |
+| `Tab` | tab | ⇥ | |
+| `Space` | space bar | | Ito rin ang **leader key**. |
+
+Paano basahin:
+
+- `Control+s`: pindutin nang **sabay** ang control at `s`.
+- `Option+1`: pindutin nang sabay ang kaliwang option at `1`.
+- `Space ff`: **sunod-sunod**, hindi sabay. Pindutin ang Space, bitawan, tapos `f`, tapos `f`.
+- `Control+w d`: pindutin nang sabay ang control at `w`, bitawan, tapos `d`.
+- Ang malaking letra (`K`, `J`, `G`, `O`) ay may kasamang Shift.
+- Ang mga nagsisimula sa `Space` ay mga sarili kong shortcut, dahil Space ang leader key.
+
+Mga mode ng Neovim:
+
+- **Normal mode**: para gumalaw at mag-utos. Dito ka pagbukas. `Esc` para bumalik dito.
+- **Insert mode**: para mag-type. Pumasok gamit ang `i`.
+- **Visual mode**: para pumili ng text. Pumasok gamit ang `v` (letra), `V` (buong linya), o `Control+v` (kahon).
+- **Command mode**: nagsisimula sa `:`, halimbawa `:w`.
 
 **Kapag nakalimutan ang shortcut:** pindutin lang ang `Space` at maghintay sandali. Lalabas ang **which-key** na nagpapakita ng lahat ng susunod na pwedeng pindutin. Pwede rin ang `:Telescope keymaps` para hanapin ang kahit anong shortcut sa pangalan.
+
+### Mga key na hawak ng WezTerm
+
+Ang terminal mo (WezTerm) ang sumasalo sa mga key na ito, kaya hindi sila umaabot sa Neovim:
+
+| Key | Ginagawa ng WezTerm |
+| --- | --- |
+| `Command+C` / `Command+V` | Copy ng text na pinili gamit ang mouse / paste. Gumagana rin ang paste habang nasa Neovim. |
+| `Command+T` / `Command+W` | Bagong tab / isara ang tab ng WezTerm |
+| `Command+1` hanggang `Command+9` | Lumipat sa tab ng WezTerm |
+| `Command+N` | Bagong window ng WezTerm |
+| `Command+F` | Maghanap sa terminal |
+| `Command+K` | Linisin ang lumang output ng terminal |
+| `Command+=` / `Command+-` / `Command+0` | Palakihin / paliitin / ibalik ang laki ng letra |
+| `Command+Q` | Isara ang WezTerm (magtatanong muna) |
+| `Control+Tab` | Susunod na tab ng WezTerm |
+| `Control+=` / `Control+-` / `Control+0` | Laki ng letra rin |
+| `Control+Shift` at isang letra o numero | Iba pang utos ng WezTerm |
+
+Kaya ang pag-save sa Neovim ay `Control+s`, hindi `Command+s`.
+
+Gumagana ang `Control+Space` sa Neovim dahil naka-off sa Mac mo ang shortcut ng macOS na gumagamit din nito (ang pagpapalit ng keyboard language, sa System Settings, Keyboard, Keyboard Shortcuts, Input Sources).
 
 ---
 
@@ -173,14 +212,14 @@ Kapag `[INFO] all checks passed` at `5 of 5 cases passed`, ayos ang lahat. Ang b
 | **telescope.nvim** | Paghahanap ng file, salita, error, at kahit ano, sa isang popup. Kailangan ng `ripgrep` (`brew install ripgrep`). |
 | **telescope-fzf-native.nvim** | Pinapabilis ang paghahanap ng Telescope. |
 | **harpoon** | "Bookmark" ng hanggang 4 na file na madalas buksan, para lumipat sa isang pindot. |
-| **vim-tmux-navigator** | Iisang shortcut para lumipat sa pagitan ng mga hati ng window sa Neovim at sa tmux. |
-| **auto-session** | Ini-save at ibinabalik ang mga bukas na file at ayos ng window para sa isang folder. Hindi kusang nagbabalik; ako ang pipindot. |
+| **vim-tmux-navigator** | Iisang shortcut para lumipat sa pagitan ng mga hati ng window. Gumagana rin ito sa tmux, pero walang tmux sa Mac mo ngayon, kaya para lang ito sa mga hati ng Neovim. |
+| **auto-session** | Ini-save at ibinabalik ang mga bukas na file at ayos ng window para sa isang folder. **Kusang nagse-save** tuwing aalis sa Neovim, maliban kung nasa `~`, `~/Dev`, `~/Downloads`, `~/Documents` o `~/Desktop` mismo. Hindi kusang nagbabalik; `Space wr` ang pipindutin. |
 
 ### Itsura
 
 | Plugin | Para saan |
 | --- | --- |
-| **rose-pine** | Ang kulay o theme. Naka-transparent ang background. |
+| **rose-pine** | Ang kulay o theme (rose-pine main). Naka-transparent ang background. |
 | **lualine.nvim** | Ang status bar sa ibaba (mode, file, git branch, at iba pa). |
 | **alpha-nvim** | Ang welcome screen kapag binuksan ang `nvim` na walang file. |
 | **indent-blankline.nvim** | Manipis na guhit na nagpapakita ng indent. |
@@ -196,7 +235,7 @@ Kapag `[INFO] all checks passed` at `5 of 5 cases passed`, ayos ang lahat. Ang b
 | **nvim-autopairs** | Kusang isinasara ang `(`, `[`, `{`, `"`, `'`. |
 | **gitsigns.nvim** | Nagpapakita ng git changes sa gilid ng linya, at mga shortcut para sa git. |
 | **todo-comments.nvim** | Kinukulayan ang `TODO`, `FIX`, `HACK`, `WARN`, `PERF`, `NOTE`, `TEST` sa comment, at mahahanap sila. |
-| **markdown-preview.nvim** | Bubukas ng preview ng Markdown file sa browser. |
+| **markdown-preview.nvim** | Bubukas ng preview ng Markdown file sa browser. Tumatakbo lang ito sa loob ng computer mo, hindi bukas sa ibang computer. |
 
 ---
 
@@ -208,7 +247,7 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+s` | I-save ang file (Normal mode lang) |
+| `Control+s` | I-save ang file (Normal mode lang). Hindi `Command+s`, dahil para sa WezTerm ang Command. |
 | `Space q` | **Isara nang hindi nagse-save.** Mag-ingat: mawawala ang hindi pa naka-save. |
 | `Space z` | Buksan ang file explorer ng Neovim (netrw) sa folder ng file na ito |
 | `Space nh` | Tanggalin ang highlight ng huling hinanap |
@@ -226,11 +265,11 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 | --- | --- |
 | `J` (sa Visual mode) | Ibaba ang mga napiling linya |
 | `K` (sa Visual mode) | Itaas ang mga napiling linya |
-| `Ctrl+d` | Bumaba ng kalahating screen, at nasa gitna ang cursor |
-| `Ctrl+u` | Umakyat ng kalahating screen, at nasa gitna ang cursor |
+| `Control+d` | Bumaba ng kalahating screen, at nasa gitna ang cursor |
+| `Control+u` | Umakyat ng kalahating screen, at nasa gitna ang cursor |
 | `n` / `N` | Susunod / nakaraang resulta ng hinanap, at nasa gitna ng screen |
 | `Space p` (sa Visual mode) | I-paste sa napili **nang hindi nawawala** ang kinopya mo. Pwedeng i-paste ulit nang paulit-ulit. |
-| `Space rw` | Palitan ang salitang nasa cursor sa **buong file**. Lalabas ang command na may salita na; burahin ito, i-type ang bago, tapos `Enter`. |
+| `Space rw` | Palitan ang salitang nasa cursor sa **buong file**. Lalabas ang command na may salita na; burahin ito, i-type ang bago, tapos `Return`. |
 
 ### Paghati ng window (split)
 
@@ -271,17 +310,18 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+j` / `Ctrl+k` | Baba / taas sa resulta (sarili kong setting) |
-| `Enter` | Buksan |
-| `Ctrl+v` | Buksan sa hating pahaba |
-| `Ctrl+x` | Buksan sa hating pahiga |
-| `Ctrl+t` | Buksan sa bagong tab |
-| `Ctrl+u` / `Ctrl+d` | I-scroll ang preview pataas / pababa |
+| `Control+j` / `Control+k` | Baba / taas sa resulta (sarili kong setting) |
+| `↓` / `↑` | Baba / taas din sa resulta |
+| `Return` | Buksan |
+| `Control+v` | Buksan sa hating pahaba |
+| `Control+x` | Buksan sa hating pahiga |
+| `Control+t` | Buksan sa bagong tab |
+| `Control+u` / `Control+d` | I-scroll ang preview pataas / pababa |
 | `Tab` | Markahan ang maraming resulta |
-| `Ctrl+q` | Ipadala lahat ng resulta sa "quickfix list" (listahan na pwedeng balikan) |
-| `Ctrl+/` | Ipakita ang lahat ng shortcut sa popup |
+| `Control+q` | Ipadala lahat ng resulta sa "quickfix list" (listahan na pwedeng balikan) |
+| `Control+/` | Ipakita ang lahat ng shortcut sa popup |
 | `Esc` | Lumipat sa Normal mode sa loob ng popup (pindutin ulit para isara) |
-| `Ctrl+c` | Isara agad |
+| `Control+c` | Isara agad |
 
 ### LSP (gumagana lang kapag may language server sa file)
 
@@ -299,17 +339,32 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 | `Space D` | Ipakita lahat ng error sa file |
 | `]d` / `[d` | Susunod / nakaraang error |
 | `Space rs` | I-restart ang language server kapag nagloloko |
-| `Ctrl+o` | Bumalik sa dating lugar pagkatapos ng `gd` |
+| `Control+o` | Bumalik sa dating lugar pagkatapos ng `gd` |
+
+**Kasama na sa Neovim 0.11** (gumagana rin sa file na may language server):
+
+| Shortcut | Gagawin |
+| --- | --- |
+| `grn` | I-rename (kapareho ng `Space rn`) |
+| `grr` | Listahan ng lahat ng gumagamit nito |
+| `gra` | Mga mungkahing ayos (kapareho ng `Space ca`) |
+| `gri` / `grt` | Implementation / type definition |
+| `gO` | Listahan ng lahat ng function at variable sa file |
+| `[D` / `]D` | Unang / huling error sa file |
+| `Control+w d` | Ipakita ang error sa cursor (kapareho ng `Space d`) |
+| `Control+s` (Insert mode) | Ipakita ang parameters ng function habang nagta-type |
 
 ### Autocomplete (Insert mode, habang may listahan ng mungkahi)
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+j` / `Ctrl+k` | Susunod / nakaraang mungkahi |
-| `Enter` | Piliin ang napiling mungkahi (kailangan munang pumili) |
-| `Ctrl+Space` | Pilitin lumabas ang listahan ng mungkahi |
-| `Ctrl+e` | Isara ang listahan |
-| `Ctrl+f` / `Ctrl+b` | I-scroll ang docs ng mungkahi |
+| `Control+j` / `Control+k` | Susunod / nakaraang mungkahi |
+| `↓` / `↑`, o `Control+n` / `Control+p` | Susunod / nakaraang mungkahi rin |
+| `Return` | Piliin ang napiling mungkahi (kailangan munang pumili) |
+| `Control+y` | Piliin din ang napiling mungkahi |
+| `Control+Space` | Pilitin lumabas ang listahan ng mungkahi |
+| `Control+e` | Isara ang listahan |
+| `Control+f` / `Control+b` | I-scroll ang docs ng mungkahi |
 
 ### Snippet (Insert mode, pagkatapos lumabas ang snippet)
 
@@ -341,17 +396,17 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | `Space xq` | Buksan ang quickfix list |
 | `Space xl` | Buksan ang location list |
 
-**Sa loob ng Trouble window:** `Enter` pumunta, `o` pumunta at isara, `p` preview, `q` isara, `?` tulong.
+**Sa loob ng Trouble window:** `Return` pumunta, `o` pumunta at isara, `p` preview, `q` isara, `?` tulong.
 
 ### Harpoon (bookmark ng file)
 
 | Shortcut | Gagawin |
 | --- | --- |
 | `Space a` | Idagdag ang file na ito sa harpoon |
-| `Alt+e` | Buksan ang listahan ng harpoon |
-| `Alt+1` hanggang `Alt+4` | Lumipat agad sa file 1, 2, 3 o 4 |
+| `Option+e` (kaliwang Option) | Buksan ang listahan ng harpoon |
+| `Option+1` hanggang `Option+4` (kaliwang Option) | Lumipat agad sa file 1, 2, 3 o 4 |
 
-**Sa loob ng listahan:** `Enter` buksan, `dd` tanggalin, ilipat ang linya para baguhin ang ayos, `q` o `Esc` isara.
+**Sa loob ng listahan:** `Return` buksan, `dd` tanggalin, ilipat ang linya para baguhin ang ayos, `q` o `Esc` isara.
 
 ### Git (gitsigns)
 
@@ -360,7 +415,7 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | `]h` / `[h` | Susunod / nakaraang binagong bahagi (hunk) |
 | `Space hp` | Silipin ang binago sa bahaging ito |
 | `Space hs` | I-stage ang bahaging ito (o ang napili sa Visual mode). Kapag naka-stage na, pindutin ulit para i-unstage. |
-| `Space hr` | Ibalik sa dati ang bahaging ito |
+| `Space hr` | Ibalik sa dati ang bahaging ito (o ang napili sa Visual mode) |
 | `Space hS` | I-stage ang buong file |
 | `Space hR` | Ibalik sa dati ang buong file |
 | `Space hb` | Sino ang huling nagbago ng linyang ito (blame) |
@@ -373,11 +428,11 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+h` | Lumipat sa kaliwa |
-| `Ctrl+j` | Lumipat pababa |
-| `Ctrl+k` | Lumipat pataas |
-| `Ctrl+l` | Lumipat sa kanan |
-| `Ctrl+\` | Bumalik sa dating window |
+| `Control+h` | Lumipat sa kaliwa |
+| `Control+j` | Lumipat pababa |
+| `Control+k` | Lumipat pataas |
+| `Control+l` | Lumipat sa kanan |
+| `Control+\` | Bumalik sa dating window |
 
 ### Comment.nvim (kasama na sa plugin)
 
@@ -388,6 +443,8 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | `gbc` | Block comment (`/* */`) |
 | `gco` / `gcO` | Bagong comment sa ilalim / ibabaw |
 | `gcA` | Comment sa dulo ng linya |
+| `gb` + galaw | Block comment ng galaw, halimbawa `gbip` (buong talata) |
+| `gc` / `gb` (sa Visual mode) | Comment / block comment ng napili |
 
 ### Todo comments
 
@@ -400,14 +457,15 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+Space` (Normal mode) | Simulan pumili; pindutin ulit para lumaki ang napili (salita, tapos expression, tapos function...) |
-| `Backspace` | Paliitin ang napili |
+| `Control+Space` (Normal mode) | Simulan pumili; pindutin ulit para lumaki ang napili (salita, tapos expression, tapos function...) |
+| `Delete` (⌫) | Paliitin ang napili |
 
 ### Session (auto-session)
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Space ws` | I-save ang mga bukas na file para sa folder na ito |
+| (kusa) | Sine-save ang session tuwing aalis sa Neovim |
+| `Space ws` | I-save ngayon ang mga bukas na file para sa folder na ito |
 | `Space wr` | Ibalik ang na-save na session ng folder na ito |
 
 ### Which-key
@@ -439,7 +497,7 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 
 | Pindutin | Gagawin |
 | --- | --- |
-| `Enter` | Buksan ang file o folder |
+| `Return` | Buksan ang file o folder |
 | `-` | Umakyat sa parent folder |
 | `%` | Gumawa ng bagong file |
 | `d` | Gumawa ng bagong folder |
@@ -453,11 +511,16 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | --- | --- | --- |
 | `K` | Normal mode | Ipakita ang docs (LSP) |
 | `K` | Visual mode | Itaas ang mga linya |
-| `Ctrl+j` / `Ctrl+k` | Normal mode | Lumipat ng window |
-| `Ctrl+j` / `Ctrl+k` | Insert mode na may mungkahi, o sa Telescope | Pumili sa listahan |
-| `Ctrl+Space` | Normal mode | Treesitter na pagpili |
-| `Ctrl+Space` | Insert mode | Ipakita ang mungkahi |
+| `Control+j` / `Control+k` | Normal mode | Lumipat ng window |
+| `Control+j` / `Control+k` | Insert mode na may mungkahi, o sa Telescope | Pumili sa listahan |
+| `Control+Space` | Normal mode | Treesitter na pagpili |
+| `Control+Space` | Insert mode | Ipakita ang mungkahi |
 | `Space rn` vs `Space rw` | Normal mode | `rn` ay rename gamit ang LSP (matalino); `rw` ay simpleng palit ng salita sa file |
+| `Control+s` | Normal mode | I-save |
+| `Control+s` | Insert mode | Ipakita ang parameters ng function (galing sa Neovim 0.11) |
+| `gt` | Normal mode, file na may language server | Type definition. Sa ibang file, "susunod na tab" ito ng Vim; gamitin ang `Space tn` para sa tab. |
+| `gi` | Normal mode, file na may language server | Implementation. Sa ibang file, bumabalik ito sa huling tinype-an mo at nagsisimulang mag-type. |
+| `]t` / `[t` | Normal mode | Susunod / nakaraang TODO. Sa Neovim 0.11, para sana ito sa "tags". |
 
 ---
 
@@ -467,7 +530,7 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 - Naka-highlight ang linyang kinatatayuan ng cursor.
 - Ang Tab ay 2 space.
 - Ang paghahanap ay hindi pinapansin ang laki ng letra, **maliban** kung may malaking letra sa hinanap.
-- Ang kinopya (`y`) ay napupunta rin sa clipboard ng Mac. Pwede itong i-paste sa ibang app, at ang kinopya sa ibang app ay pwedeng i-paste sa Neovim gamit ang `p`.
+- Ang kinopya (`y`) ay napupunta rin sa clipboard ng Mac. Pwede itong i-paste sa ibang app, at ang kinopya sa ibang app ay pwedeng i-paste sa Neovim gamit ang `p`. Gumagana rin ang `Command+V` ng WezTerm.
 - Laging may 8 linya sa itaas at ibaba ng cursor habang nag-scroll.
 - Bumabalot ang mahahabang linya, at hanggang 80 letra ang lapad ng sinusulat.
 - Ang bagong hati ay lumalabas sa kanan o sa ibaba.
@@ -498,7 +561,8 @@ Ito ang mga shortcut na kasama na sa Vim mismo. Kapag kabisado ko ito, hindi ko 
 | `{` / `}` | Nakaraang / susunod na talata (blangkong linya) |
 | `H` / `M` / `L` | Itaas / gitna / ibaba ng screen |
 | `zz` | Ilagay sa gitna ng screen ang linyang ito |
-| `Ctrl+o` / `Ctrl+i` | Bumalik / sumulong sa mga lugar na pinuntahan |
+| `Control+o` / `Control+i` | Bumalik / sumulong sa mga lugar na pinuntahan |
+| `gx` | Buksan sa browser ang link na nasa cursor |
 
 ### Pagpasok sa Insert mode
 
@@ -519,11 +583,12 @@ Ito ang mga shortcut na kasama na sa Vim mismo. Kapag kabisado ko ito, hindi ko 
 | `yy` | Kopyahin ang linya |
 | `p` / `P` | I-paste sa ilalim / ibabaw |
 | `u` | Undo |
-| `Ctrl+r` | Redo |
+| `Control+r` | Redo |
 | `.` | **Ulitin ang huling ginawa.** Isa ito sa pinakamakapangyarihan. |
 | `>>` / `<<` | Dagdagan / bawasan ang indent |
 | `J` | Pagsamahin ang linyang ito at ang kasunod |
 | `~` | Palitan ang laki ng letra |
+| `[ Space` / `] Space` | Magdagdag ng blangkong linya sa ibabaw / ilalim (pindutin ang `[` o `]`, tapos Space) |
 
 ### Utos + bagay (ang sikreto ng Vim)
 
@@ -559,8 +624,8 @@ Mga halimbawa:
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `/salita` + `Enter` | Hanapin pababa |
-| `?salita` + `Enter` | Hanapin pataas |
+| `/salita` + `Return` | Hanapin pababa |
+| `?salita` + `Return` | Hanapin pataas |
 | `n` / `N` | Susunod / nakaraang resulta |
 | `*` / `#` | Hanapin ang salitang nasa cursor pababa / pataas |
 | `:%s/luma/bago/g` | Palitan lahat ng `luma` ng `bago` sa buong file |
@@ -570,9 +635,11 @@ Mga halimbawa:
 ### Paghahanap at pagpapalit sa buong project
 
 1. `Space fs`, i-type ang hinahanap.
-2. `Ctrl+q` para ipadala lahat ng resulta sa quickfix list.
+2. `Control+q` para ipadala lahat ng resulta sa quickfix list.
 3. I-type: `:cdo s/luma/bago/g | update`
 4. Papalitan at ise-save lahat ng file na may resulta.
+
+Para isa-isahin ang mga resulta: `]q` / `[q` (susunod / nakaraan sa quickfix list).
 
 ### Visual mode
 
@@ -580,8 +647,8 @@ Mga halimbawa:
 | --- | --- |
 | `v` | Pumili ng letra-letra |
 | `V` | Pumili ng buong linya |
-| `Ctrl+v` | Pumili ng kahon (column) |
-| `Ctrl+v`, piliin pababa, `I`, mag-type, `Esc` | Mag-type sa maraming linya nang sabay |
+| `Control+v` | Pumili ng kahon (column) |
+| `Control+v`, piliin pababa, `I`, mag-type, `Esc` | Mag-type sa maraming linya nang sabay |
 | `gv` | Piliin ulit ang huling napili |
 
 ### Mga marka (bookmark sa loob ng file)
@@ -609,15 +676,16 @@ Mga halimbawa:
 | `:q` | Isara (tatanggi kung may hindi naka-save) |
 | `:wq` o `ZZ` | I-save at isara |
 | `:e pangalan` | Buksan ang file |
-| `Ctrl+^` | Bumalik sa dating file na binuksan |
+| `Control+6` | Bumalik sa dating file na binuksan |
 | `:bn` / `:bp` | Susunod / nakaraang bukas na file |
+| `]b` / `[b` | Susunod / nakaraang bukas na file din, mas mabilis |
 
 ### Sa loob ng Insert mode
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Ctrl+w` | Burahin ang salita bago ang cursor |
-| `Ctrl+o` + utos | Gumawa ng isang Normal mode na utos tapos balik sa pag-type |
+| `Control+w` | Burahin ang salita bago ang cursor |
+| `Control+o` + utos | Gumawa ng isang Normal mode na utos tapos balik sa pag-type |
 
 ---
 
@@ -626,10 +694,10 @@ Mga halimbawa:
 1. Sa terminal, pumunta sa project folder at i-type `nvim .`
 2. `Space wr` kung gusto ibalik ang huling session.
 3. `Space ff` para buksan ang file, o `Space fs` para hanapin ang salita.
-4. `Space a` sa 2 hanggang 4 na file na madalas balikan, tapos `Alt+1` hanggang `Alt+4` para lumipat.
-5. `gd` para tingnan kung saan ginawa ang function, `Ctrl+o` para bumalik.
+4. `Space a` sa 2 hanggang 4 na file na madalas balikan, tapos `Option+1` hanggang `Option+4` para lumipat.
+5. `gd` para tingnan kung saan ginawa ang function, `Control+o` para bumalik.
 6. `Space rn` para mag-rename nang ligtas.
-7. `Ctrl+s` para mag-save (kusang naaayos ang code).
+7. `Control+s` para mag-save (kusang naaayos ang code).
 8. `Space xd` para tingnan lahat ng error sa file.
 9. `]h` at `Space hp` para silipin ang mga binago bago mag-commit.
 10. `Space ws` bago isara, para mabalikan bukas.
