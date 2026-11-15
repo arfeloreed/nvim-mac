@@ -9,7 +9,7 @@ return {
 			typescript = { "eslint_d" },
 			javascriptreact = { "eslint_d" },
 			typescriptreact = { "eslint_d" },
-			python = { "ruff" },
+			-- python: the ruff language server already reports these (lspconfig.lua)
 		}
 
 		lint.linters.eslint_d.args = {

@@ -8,6 +8,7 @@
 --   * the config files no longer use names that the plugins or Neovim deprecated
 --   * each language gets its language server exactly once, and no unwanted server runs
 --   * remapped keys work: ]d, gd, Visual J and K
+--   * a Python problem is reported once, not by two tools
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
@@ -18,7 +19,8 @@ local CONFIG_DIR = vim.fn.getcwd()
 local SAMPLES = {
 	{ file = "sample.lua", text = { "local x = 1", "print(x)" }, servers = { "lua_ls" } },
 	{ file = "sample.ts", text = { "const x: number = 1;", "console.log(x);" }, servers = { "ts_ls" } },
-	{ file = "sample.py", text = { "x = 1", "print(x)" }, servers = { "ruff" } },
+	-- the unused import gives the Python check something to report
+	{ file = "sample.py", text = { "import os", "", "x = 1", "print(x)" }, servers = { "ruff" } },
 	{ file = "sample.html", text = { "<div>hi</div>" }, servers = { "html" } },
 	{ file = "sample.css", text = { ".a { color: red; }" }, servers = { "cssls" } },
 }
@@ -185,8 +187,15 @@ local function use_remapped_keys(channel)
 	press(channel, "[d")
 	press(channel, "<Esc>")
 
-	-- gd goes through Telescope's LSP picker (the 0.1.x picker warned on Neovim 0.11)
-	remote_lua(channel, "vim.diagnostic.reset(); vim.api.nvim_win_set_cursor(0, { 2, 6 })")
+	-- gd goes through Telescope's LSP picker (the 0.1.x picker warned on Neovim 0.11).
+	-- Clear only this test's diagnostic: a bare reset() would also wipe the servers' ones.
+	remote_lua(
+		channel,
+		[[
+		vim.diagnostic.reset(vim.api.nvim_create_namespace("startup_test"))
+		vim.api.nvim_win_set_cursor(0, { 2, 6 })
+	]]
+	)
 	press(channel, "gd")
 	vim.wait(2000)
 	local line_after_gd = remote_lua(channel, "return vim.api.nvim_win_get_cursor(0)[1]")
@@ -210,6 +219,39 @@ local function use_remapped_keys(channel)
 		"Visual K moves the selected line up",
 		table.concat(after_up, " / ")
 	)
+end
+
+local function check_no_duplicate_diagnostics(channel)
+	vim.rpcrequest(channel, "nvim_command", "edit sample.py")
+	vim.wait(LSP_TIMEOUT_MS, function()
+		return remote_lua(channel, "return #vim.diagnostic.get(0)") > 0
+	end, 250)
+	-- give a second reporter, if there is one, time to add its copy
+	vim.wait(3000)
+	local diagnostics = remote_lua(
+		channel,
+		[[
+		local rows = {}
+		for _, d in ipairs(vim.diagnostic.get(0)) do
+			table.insert(rows, { key = d.lnum .. ":" .. d.col .. ":" .. tostring(d.code), source = tostring(d.source) })
+		end
+		return rows
+	]]
+	)
+	check(#diagnostics > 0, "sample.py reports the unused import", "no diagnostics")
+
+	local sources_by_problem = {}
+	for _, d in ipairs(diagnostics) do
+		sources_by_problem[d.key] = sources_by_problem[d.key] or {}
+		table.insert(sources_by_problem[d.key], d.source)
+	end
+	local duplicates = {}
+	for problem, sources in pairs(sources_by_problem) do
+		if #sources > 1 then
+			table.insert(duplicates, problem .. " reported by " .. table.concat(sources, " and "))
+		end
+	end
+	check(#duplicates == 0, "sample.py shows each problem once", table.concat(duplicates, "; "))
 end
 
 local function check_messages(channel)
@@ -246,6 +288,7 @@ local function run()
 	local channel = start_editor(sample_dir)
 	check_language_servers(channel)
 	use_remapped_keys(channel)
+	check_no_duplicate_diagnostics(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)

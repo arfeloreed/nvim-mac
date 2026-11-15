@@ -202,7 +202,7 @@ Gumagana ang `Control+Space` sa Neovim dahil naka-off sa Mac mo ang shortcut ng 
 | Plugin | Para saan |
 | --- | --- |
 | **conform.nvim** | Inaayos ang itsura ng code **tuwing nagse-save**. `prettier` para sa JS/TS/CSS/HTML/JSON, `stylua` para sa Lua, `ruff` para sa Python. |
-| **nvim-lint** | Naghahanap ng mali sa code kapag nagbukas, nag-save, o umalis sa Insert mode. `eslint_d` para sa JS/TS, `ruff` para sa Python. |
+| **nvim-lint** | Naghahanap ng mali sa code kapag nagbukas, nag-save, o umalis sa Insert mode. `eslint_d` para sa JS/TS. Ang Python ay sinusuri na ng `ruff` language server, kaya wala na ito rito (para hindi doble ang babala). |
 | **trouble.nvim** | Magandang listahan ng lahat ng error at babala sa isang window. |
 
 ### Paghahanap at paglipat ng file
@@ -385,7 +385,7 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | --- | --- |
 | (kusa) | Inaayos ang code tuwing nagse-save |
 | `Space mp` | Ayusin ang code ngayon (buong file, o ang napili sa Visual mode) |
-| `Space l` | Suriin ngayon ang file para sa mali |
+| `Space l` | Suriin ngayon ang file para sa mali (JS/TS; ang Python ay kusang sinusuri ng language server) |
 
 ### Trouble (listahan ng error)
 
