@@ -25,7 +25,6 @@ return {
 				async = false,
 				timeout_ms = 15000,
 			},
-			log_level = vim.log.levels.DEBUG,
 		})
 
 		-- format on normal and visual mode

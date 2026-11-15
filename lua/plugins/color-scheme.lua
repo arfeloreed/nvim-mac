@@ -1,20 +1,16 @@
--- transparent nvim
-function Transparent(color)
-	color = color
-	vim.cmd.colorscheme(color)
+-- rose-pine with a transparent background
+local function use_transparent(colorscheme)
+	vim.cmd.colorscheme(colorscheme)
 	vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 	vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
 end
 
 return {
-	-- rose-pine setup
 	"rose-pine/neovim",
 	name = "rose-pine",
 	lazy = false,
 	priority = 1000,
 	config = function()
-		-- load the colorscheme here
-		vim.cmd("colorscheme rose-pine-main")
-		Transparent("rose-pine")
+		use_transparent("rose-pine-main")
 	end,
 }

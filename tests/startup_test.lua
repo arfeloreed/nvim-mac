@@ -11,6 +11,7 @@
 --   * a Python problem is reported once, not by two tools
 --   * completion shortens long suggestions and still shows Tailwind colors
 --   * every keymap the config defines has a description (which-key shows it)
+--   * the colorscheme setup leaves no global function and keeps the background transparent
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
@@ -340,6 +341,32 @@ local function check_keymap_descriptions(channel)
 	check(#missing == 0, "every keymap from the config has a description", "\n    " .. table.concat(missing, "\n    "))
 end
 
+local function check_colors_and_logs(channel)
+	local state = remote_lua(
+		channel,
+		[[
+		return {
+			global_transparent = _G.Transparent ~= nil,
+			normal_bg = vim.api.nvim_get_hl(0, { name = "Normal" }).bg,
+			colors_name = vim.g.colors_name or "",
+			conform_log_level = require("conform.log").level,
+		}
+	]]
+	)
+	check(not state.global_transparent, "color-scheme.lua leaves no global Transparent function", "_G.Transparent exists")
+	check(state.normal_bg == nil, "the background stays transparent", ("Normal bg=%s"):format(tostring(state.normal_bg)))
+	check(
+		state.colors_name:find("rose-pine", 1, true) == 1,
+		"the rose-pine colorscheme is active",
+		("colors_name=%s"):format(state.colors_name)
+	)
+	check(
+		state.conform_log_level >= vim.log.levels.WARN,
+		"conform does not write a debug log",
+		("conform log level=%d"):format(state.conform_log_level)
+	)
+end
+
 local function check_messages(channel)
 	local messages = vim.rpcrequest(channel, "nvim_exec2", "messages", { output = true }).output
 	local bad = {}
@@ -377,6 +404,7 @@ local function run()
 	check_no_duplicate_diagnostics(channel)
 	check_completion_format(channel)
 	check_keymap_descriptions(channel)
+	check_colors_and_logs(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)
