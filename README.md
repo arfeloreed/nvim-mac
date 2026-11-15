@@ -194,7 +194,7 @@ Gumagana ang `Control+Space` sa Neovim dahil naka-off sa Mac mo ang shortcut ng 
 | **LuaSnip** | Ang makina ng snippet (maikling salita na nagiging buong code). |
 | **cmp_luasnip** | Ipinapakita ang mga snippet sa listahan ng mungkahi. |
 | **friendly-snippets** | Handang koleksyon ng snippet para sa maraming wika. |
-| **lspkind.nvim** | Maliliit na icon sa listahan ng mungkahi, parang sa VS Code. |
+| **lspkind.nvim** | Ang mga icon sa listahan ng mungkahi, parang sa VS Code (ang nvim-cmp ang gumuguhit gamit ang listahan ng icon nito). Pinaiikli rin nito ang sobrang habang mungkahi, hanggang 50 letra. |
 | **tailwindcss-colorizer-cmp.nvim** | Sa mungkahi ng Tailwind class, ipinapakita ang mismong kulay bilang maliit na kahon. |
 
 ### Pag-format at pagsuri ng code

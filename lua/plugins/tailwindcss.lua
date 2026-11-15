@@ -1,20 +1,10 @@
 return {
 	"roobert/tailwindcss-colorizer-cmp.nvim",
 	event = { "InsertEnter" },
-	-- optionally, override the default options:
+	-- its formatter is wired into nvim-cmp's formatting in nvim-cmp.lua
 	config = function()
-		local tailwindCmp = require("tailwindcss-colorizer-cmp")
-
-		tailwindCmp.setup({
+		require("tailwindcss-colorizer-cmp").setup({
 			color_square_width = 2,
-		})
-
-		local cmp = require("cmp")
-
-		cmp.setup({
-			formatting = {
-				format = tailwindCmp.formatter,
-			},
 		})
 	end,
 }

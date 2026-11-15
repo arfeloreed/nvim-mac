@@ -9,6 +9,7 @@
 --   * each language gets its language server exactly once, and no unwanted server runs
 --   * remapped keys work: ]d, gd, Visual J and K
 --   * a Python problem is reported once, not by two tools
+--   * completion shortens long suggestions and still shows Tailwind colors
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
@@ -254,6 +255,35 @@ local function check_no_duplicate_diagnostics(channel)
 	check(#duplicates == 0, "sample.py shows each problem once", table.concat(duplicates, "; "))
 end
 
+local function check_completion_format(channel)
+	-- nvim-cmp and its formatters load on the first InsertEnter
+	vim.rpcrequest(channel, "nvim_command", "enew!")
+	press(channel, "i")
+	vim.wait(500)
+	press(channel, "<Esc>")
+	local result = remote_lua(
+		channel,
+		[[
+		local format = require("cmp.config").get().formatting.format
+		local entry = { source = { name = "nvim_lsp" }, get_completion_item = function() return {} end }
+		local long = string.rep("a", 80)
+		local plain = format(entry, { word = long, abbr = long, kind = "Function" })
+		local color = format(entry, { word = "bg-red-500", abbr = "bg-red-500", kind = "Color" })
+		return { abbr_chars = vim.fn.strchars(plain.abbr), color_kind = color.kind, color_hl = color.kind_hl_group or "" }
+	]]
+	)
+	check(
+		result.abbr_chars == 53,
+		"completion shortens a long suggestion to 50 characters plus ...",
+		("shown length=%d"):format(result.abbr_chars)
+	)
+	check(
+		result.color_kind == "XX" and result.color_hl:find("lsp_documentColor_mf_", 1, true) == 1,
+		"completion still shows a Tailwind color as a color square",
+		("kind=%s highlight=%s"):format(result.color_kind, result.color_hl)
+	)
+end
+
 local function check_messages(channel)
 	local messages = vim.rpcrequest(channel, "nvim_exec2", "messages", { output = true }).output
 	local bad = {}
@@ -289,6 +319,7 @@ local function run()
 	check_language_servers(channel)
 	use_remapped_keys(channel)
 	check_no_duplicate_diagnostics(channel)
+	check_completion_format(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)

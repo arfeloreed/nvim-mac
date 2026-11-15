@@ -14,6 +14,7 @@ return {
 		"saadparwaiz1/cmp_luasnip", -- for autocompletion
 		"rafamadriz/friendly-snippets", -- useful snippets
 		"onsails/lspkind.nvim", -- vs-code like pictograms
+		"roobert/tailwindcss-colorizer-cmp.nvim", -- color squares for Tailwind classes (see formatting)
 	},
 	config = function()
 		local cmp = require("cmp")
@@ -70,11 +71,14 @@ return {
 				{ name = "path" }, -- file system paths
 			}),
 
-			-- configure lspkind for vs-code like pictograms in completion menu
+			-- the only formatting.format: nvim-cmp draws the kind icons itself from lspkind's
+			-- symbol map; cmp_format shortens long items, and `before` lets
+			-- tailwindcss-colorizer-cmp turn Tailwind color items into color squares
 			formatting = {
 				format = lspkind.cmp_format({
 					maxwidth = 50,
 					ellipsis_char = "...",
+					before = require("tailwindcss-colorizer-cmp").formatter,
 				}),
 			},
 		})
