@@ -135,7 +135,7 @@ Mga mode ng Neovim:
 - **Visual mode**: para pumili ng text. Pumasok gamit ang `v` (letra), `V` (buong linya), o `Control+v` (kahon).
 - **Command mode**: nagsisimula sa `:`, halimbawa `:w`.
 
-**Kapag nakalimutan ang shortcut:** pindutin lang ang `Space` at maghintay sandali. Lalabas ang **which-key** na nagpapakita ng lahat ng susunod na pwedeng pindutin. Pwede rin ang `:Telescope keymaps` para hanapin ang kahit anong shortcut sa pangalan.
+**Kapag nakalimutan ang shortcut:** pindutin lang ang `Space` at maghintay sandali. Lalabas ang **which-key** na nagpapakita ng lahat ng susunod na pwedeng pindutin, at may maikling paliwanag ang bawat isa. Pwede rin ang `:Telescope keymaps` para hanapin ang kahit anong shortcut ayon sa paliwanag nito.
 
 ### Mga key na hawak ng WezTerm
 

@@ -1,37 +1,49 @@
 -- shorten function name
 local key = vim.keymap.set
--- silent keymap option
-local opts = { silent = true }
-
 -- remap space as leader key (not in Select mode, where a typed space must replace the selection)
-key({ "n", "x", "o" }, "<Space>", "<Nop>", opts)
+key({ "n", "x", "o" }, "<Space>", "<Nop>", { silent = true, desc = "Leader key (does nothing on its own)" })
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 key("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
--- leader + z to exit and return to previous buffer
-key("n", "<leader>z", vim.cmd.Ex, { desc = "Ex map. Exit buffer and go back to cwd" })
+-- leader + z opens the file explorer (netrw) in the current file's folder
+key("n", "<leader>z", vim.cmd.Ex, { desc = "Open file explorer in this file's folder" })
 
 -- CTRL + s to save
-key("n", "<C-s>", [[:w<CR>]])
--- leader + q to quit the buffer and nvim without saving
-key("n", "<leader>q", [[:q!<CR>]], { desc = "Quit nvim without saving." })
+key("n", "<C-s>", [[:w<CR>]], { desc = "Save file" })
+-- leader + q closes the window without saving (Neovim quits with the last window)
+key("n", "<leader>q", [[:q!<CR>]], { desc = "Quit without saving (closes Neovim if last window)" })
 
 -- for commenting
 -- leader + / for comment
-key("n", "<leader>/", "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>", opts)
-key("x", "<leader>/", "<esc><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>", opts)
+key(
+	"n",
+	"<leader>/",
+	"<cmd>lua require('Comment.api').toggle.linewise.current()<CR>",
+	{ silent = true, desc = "Toggle comment on this line" }
+)
+key(
+	"x",
+	"<leader>/",
+	"<esc><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>",
+	{ silent = true, desc = "Toggle comment on the selection" }
+)
 
 -- moving lines ("x" is Visual mode only; "v" would also catch J and K typed into a snippet placeholder)
-key("x", "J", ":m '>+1<CR>gv=gv") -- move the line/s down
-key("x", "K", ":m '<-2<CR>gv=gv") -- move the line/s up
-key("n", "<C-d>", "<C-d>zz") -- move half-screen down
-key("n", "<C-u>", "<C-u>zz") -- move half-screen up
+key("x", "J", ":m '>+1<CR>gv=gv", { desc = "Move selected lines down" })
+key("x", "K", ":m '<-2<CR>gv=gv", { desc = "Move selected lines up" })
+key("n", "<C-d>", "<C-d>zz", { desc = "Half page down, cursor centered" })
+key("n", "<C-u>", "<C-u>zz", { desc = "Half page up, cursor centered" })
 -- centers the cursor during navigation on search
-key("n", "n", "nzzzv")
-key("n", "N", "Nzzzv")
-key("x", "<leader>p", [["_dP]], { desc = "paste v.2" }) -- paste v.2
-key("n", "<leader>rw", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { desc = "Replace string pattern" }) -- replace string pattern under the cursor
+key("n", "n", "nzzzv", { desc = "Next search result, centered" })
+key("n", "N", "Nzzzv", { desc = "Previous search result, centered" })
+key("x", "<leader>p", [["_dP]], { desc = "Paste over selection, keep the copied text" })
+key(
+	"n",
+	"<leader>rw",
+	[[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
+	{ desc = "Replace the word under the cursor in this file" }
+)
 
 -- window management
 key("n", "<leader>sv", "<C-w>v", { desc = "Split window vertically" }) -- split window vertically

@@ -10,6 +10,7 @@
 --   * remapped keys work: ]d, gd, Visual J and K
 --   * a Python problem is reported once, not by two tools
 --   * completion shortens long suggestions and still shows Tailwind colors
+--   * every keymap the config defines has a description (which-key shows it)
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
@@ -53,6 +54,17 @@ local DEPRECATED_NAMES = {
 	{ pattern = '"williamboman/', reason = "mason moved to mason-org/" },
 }
 
+-- Runs before init.lua (--cmd) and records who calls vim.keymap.set, with the desc it passes.
+local RECORD_KEYMAPS = table.concat({
+	"_G.__startup_test_keymaps = {}",
+	"local set = vim.keymap.set",
+	"vim.keymap.set = function(mode, lhs, rhs, opts)",
+	"local info = debug.getinfo(2, 'Sl')",
+	"table.insert(_G.__startup_test_keymaps, { lhs = lhs, desc = opts and opts.desc or nil, source = info.source, line = info.currentline })",
+	"return set(mode, lhs, rhs, opts)",
+	"end",
+}, " ")
+
 local failures = 0
 
 local function check(ok, name, detail)
@@ -65,7 +77,10 @@ local function check(ok, name, detail)
 end
 
 local function start_editor(cwd)
-	local channel = vim.fn.jobstart({ "nvim", "--embed", "--headless" }, { rpc = true, cwd = cwd })
+	local channel = vim.fn.jobstart(
+		{ "nvim", "--embed", "--headless", "--cmd", "lua " .. RECORD_KEYMAPS },
+		{ rpc = true, cwd = cwd }
+	)
 	assert(channel > 0, "could not start the embedded Neovim (jobstart returned " .. channel .. ")")
 	local ready = vim.wait(STARTUP_TIMEOUT_MS, function()
 		return (pcall(vim.rpcrequest, channel, "nvim_eval", "1"))
@@ -284,6 +299,47 @@ local function check_completion_format(channel)
 	)
 end
 
+local function check_keymap_descriptions(channel)
+	-- gitsigns sets its keys only in files that git tracks, so open one from the config repo
+	vim.rpcrequest(channel, "nvim_command", "edit " .. CONFIG_DIR .. "/lua/reed/keymaps.lua")
+	local attached = vim.wait(LSP_TIMEOUT_MS, function()
+		return remote_lua(channel, "return vim.b.gitsigns_status_dict ~= nil")
+	end, 250)
+	check(attached, "gitsigns attaches to a file tracked by git", "no gitsigns status")
+
+	local missing = remote_lua(
+		channel,
+		[[
+		local config_dir = ...
+		local seen, missing = {}, {}
+		local function note(where, desc)
+			if seen[where] then return end
+			seen[where] = true
+			if not desc or desc == "" then table.insert(missing, where) end
+		end
+		-- keymaps set by the config's own files (recorded by RECORD_KEYMAPS)
+		for _, call in ipairs(_G.__startup_test_keymaps or {}) do
+			if call.source:sub(1, #config_dir + 1) == "@" .. config_dir then
+				note(("%s:%d %s"):format(call.source:sub(#config_dir + 3), call.line, tostring(call.lhs)), call.desc)
+			end
+		end
+		-- keys = { ... } entries in the plugin specs, which lazy.nvim maps for us
+		for _, mode in ipairs({ "n", "x", "o", "i" }) do
+			for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
+				local info = map.callback and debug.getinfo(map.callback, "S")
+				if info and info.source:find("lazy/core/handler/keys.lua", 1, true) then
+					note(("lazy keys (%s) %s"):format(mode, map.lhs), map.desc)
+				end
+			end
+		end
+		table.sort(missing)
+		return missing
+	]],
+		{ CONFIG_DIR }
+	)
+	check(#missing == 0, "every keymap from the config has a description", "\n    " .. table.concat(missing, "\n    "))
+end
+
 local function check_messages(channel)
 	local messages = vim.rpcrequest(channel, "nvim_exec2", "messages", { output = true }).output
 	local bad = {}
@@ -320,6 +376,7 @@ local function run()
 	use_remapped_keys(channel)
 	check_no_duplicate_diagnostics(channel)
 	check_completion_format(channel)
+	check_keymap_descriptions(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)
