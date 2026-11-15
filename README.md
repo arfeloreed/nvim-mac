@@ -97,9 +97,9 @@ May dalawang test sa `tests/` na sumusuri kung buo pa ang setup. Patakbuhin sa t
 | Command | Sinusuri |
 | --- | --- |
 | `nvim --headless -l tests/startup_test.lua` | Tamang language server sa bawat wika (isa lang, walang doble), walang error o babala sa pagbukas, walang luma nang setting, gumagana ang `]d` at `gd` |
-| `nvim --headless -l tests/snippet_jump_test.lua` | Gumagana ang `Tab` / `Shift+Tab` sa snippet |
+| `nvim --headless -l tests/snippet_jump_test.lua` | Gumagana ang `Tab` / `Shift+Tab` sa snippet, at lumalabas ang `K`, `J` at Space kapag sila ang unang tinype |
 
-Kapag `[INFO] all checks passed` at `5 of 5 cases passed`, ayos ang lahat. Ang bawat `[FAIL]` ay nagsasabi kung ano ang mali.
+Kapag walang `[FAIL]`, ayos ang lahat. Ang bawat `[FAIL]` ay nagsasabi kung ano ang mali.
 
 ---
 
@@ -368,7 +368,7 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 
 ### Snippet (Insert mode, pagkatapos lumabas ang snippet)
 
-Kapag pumili ng snippet sa listahan ng mungkahi, may mga bahagi itong kailangang punan. Naka-highlight ang unang bahagi; mag-type lang para palitan ito.
+Kapag pumili ng snippet sa listahan ng mungkahi, may mga bahagi itong kailangang punan. Naka-highlight ang unang bahagi; mag-type lang para palitan ito. Lalabas ang kahit anong unang letra, pati malaking `K` at `J`, at ang Space.
 
 | Shortcut | Gagawin |
 | --- | --- |

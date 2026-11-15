@@ -1,14 +1,14 @@
--- Integration test: the config starts cleanly after plugin updates.
+-- Integration test: the config starts cleanly and its main features work.
 -- Run from the config folder:
 --   nvim --headless -l tests/startup_test.lua
 -- Exits 0 when every check passes, 1 otherwise.
 --
 -- Drives a second Neovim (real config, real plugins, real language servers) over RPC,
--- opens one sample file per language, and checks:
---   * each language gets its language server exactly once, and no unwanted server runs
---   * no warning or error shows up in :messages
---   * :checkhealth vim.deprecated is clean after the remapped keys were used
+-- opens sample files in a temp folder, and checks:
 --   * the config files no longer use names that the plugins or Neovim deprecated
+--   * each language gets its language server exactly once, and no unwanted server runs
+--   * remapped keys work: ]d, gd, Visual J and K
+--   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
 local STARTUP_TIMEOUT_MS = 10000
@@ -80,6 +80,10 @@ local function remote_lua(channel, code, args)
 	return vim.rpcrequest(channel, "nvim_exec_lua", code, args or {})
 end
 
+local function buffer_lines(channel)
+	return vim.rpcrequest(channel, "nvim_buf_get_lines", 0, 0, -1, false)
+end
+
 local function client_names(channel)
 	return remote_lua(
 		channel,
@@ -105,6 +109,22 @@ end
 local function write_samples(dir)
 	for _, sample in ipairs(SAMPLES) do
 		vim.fn.writefile(sample.text, dir .. "/" .. sample.file)
+	end
+end
+
+local function check_config_names()
+	local files = vim.fn.globpath(CONFIG_DIR, "lua/**/*.lua", false, true)
+	for _, entry in ipairs(DEPRECATED_NAMES) do
+		local hits = {}
+		for _, path in ipairs(files) do
+			for number, line in ipairs(vim.fn.readfile(path)) do
+				local code = line:gsub("%-%-.*$", "")
+				if code:match(entry.pattern) then
+					table.insert(hits, ("%s:%d"):format(vim.fn.fnamemodify(path, ":."), number))
+				end
+			end
+		end
+		check(#hits == 0, "config does not use " .. entry.reason, table.concat(hits, ", "))
 	end
 end
 
@@ -171,6 +191,25 @@ local function use_remapped_keys(channel)
 	vim.wait(2000)
 	local line_after_gd = remote_lua(channel, "return vim.api.nvim_win_get_cursor(0)[1]")
 	check(line_after_gd == 1, "gd jumps to where x is defined", ("cursor line=%s"):format(line_after_gd))
+
+	-- Visual-mode J and K move the selected lines
+	remote_lua(channel, "vim.api.nvim_win_set_cursor(0, { 1, 0 })")
+	press(channel, "V")
+	press(channel, "J")
+	local after_down = buffer_lines(channel)
+	press(channel, "K")
+	local after_up = buffer_lines(channel)
+	press(channel, "<Esc>")
+	check(
+		after_down[1] == "print(x)" and after_down[2] == "local x = 1",
+		"Visual J moves the selected line down",
+		table.concat(after_down, " / ")
+	)
+	check(
+		after_up[1] == "local x = 1" and after_up[2] == "print(x)",
+		"Visual K moves the selected line up",
+		table.concat(after_up, " / ")
+	)
 end
 
 local function check_messages(channel)
@@ -189,28 +228,12 @@ end
 
 local function check_deprecated_health(channel)
 	vim.rpcrequest(channel, "nvim_command", "checkhealth vim.deprecated")
-	local report = table.concat(vim.rpcrequest(channel, "nvim_buf_get_lines", 0, 0, -1, false), "\n")
+	local report = table.concat(buffer_lines(channel), "\n")
 	check(
 		report:find("No deprecated functions detected", 1, true) ~= nil,
 		":checkhealth vim.deprecated is clean",
 		"\n" .. report
 	)
-end
-
-local function check_config_names()
-	local files = vim.fn.globpath(CONFIG_DIR, "lua/**/*.lua", false, true)
-	for _, entry in ipairs(DEPRECATED_NAMES) do
-		local hits = {}
-		for _, path in ipairs(files) do
-			for number, line in ipairs(vim.fn.readfile(path)) do
-				local code = line:gsub("%-%-.*$", "")
-				if code:match(entry.pattern) then
-					table.insert(hits, ("%s:%d"):format(vim.fn.fnamemodify(path, ":."), number))
-				end
-			end
-		end
-		check(#hits == 0, "config does not use " .. entry.reason, table.concat(hits, ", "))
-	end
 end
 
 local function run()

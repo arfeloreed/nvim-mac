@@ -29,7 +29,7 @@ return {
 		})
 
 		-- format on normal and visual mode
-		vim.keymap.set({ "n", "v" }, "<leader>mp", function()
+		vim.keymap.set({ "n", "x" }, "<leader>mp", function()
 			conform.format({
 				lsp_format = "fallback",
 				async = false,

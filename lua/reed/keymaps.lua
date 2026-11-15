@@ -3,8 +3,8 @@ local key = vim.keymap.set
 -- silent keymap option
 local opts = { silent = true }
 
--- remap space as leader key
-key("", "<Space>", "<Nop>", opts)
+-- remap space as leader key (not in Select mode, where a typed space must replace the selection)
+key({ "n", "x", "o" }, "<Space>", "<Nop>", opts)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
@@ -22,9 +22,9 @@ key("n", "<leader>q", [[:q!<CR>]], { desc = "Quit nvim without saving." })
 key("n", "<leader>/", "<cmd>lua require('Comment.api').toggle.linewise.current()<CR>", opts)
 key("x", "<leader>/", "<esc><cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>", opts)
 
--- moving lines
-key("v", "J", ":m '>+1<CR>gv=gv") -- move the line/s down
-key("v", "K", ":m '<-2<CR>gv=gv") -- move the line/s up
+-- moving lines ("x" is Visual mode only; "v" would also catch J and K typed into a snippet placeholder)
+key("x", "J", ":m '>+1<CR>gv=gv") -- move the line/s down
+key("x", "K", ":m '<-2<CR>gv=gv") -- move the line/s up
 key("n", "<C-d>", "<C-d>zz") -- move half-screen down
 key("n", "<C-u>", "<C-u>zz") -- move half-screen up
 -- centers the cursor during navigation on search

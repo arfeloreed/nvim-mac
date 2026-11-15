@@ -53,6 +53,23 @@ local cases = {
 		steps = { EXPAND_SNIPPET, "<Tab>", "zz", "<S-Tab>", "yy", "<Esc>" },
 		expected = "foo(yy, zz)",
 	},
+	-- An active placeholder is in Select mode: the first key typed must replace it,
+	-- not run a Visual-mode keymap (J, K and the Space leader exist in Visual mode).
+	{
+		name = "Typing K first in a placeholder types K",
+		steps = { EXPAND_SNIPPET, "K", "y", "<Esc>" },
+		expected = "foo(Ky, bb)",
+	},
+	{
+		name = "Typing J first in a placeholder types J",
+		steps = { EXPAND_SNIPPET, "J", "y", "<Esc>" },
+		expected = "foo(Jy, bb)",
+	},
+	{
+		name = "Typing Space first in a placeholder types a space",
+		steps = { EXPAND_SNIPPET, "<Space>", "y", "<Esc>" },
+		expected = "foo( y, bb)",
+	},
 	{
 		name = "Tab outside a snippet still inserts indentation",
 		steps = { "i", "<Tab>", "x", "<Esc>" },
