@@ -12,11 +12,13 @@
 --   * completion shortens long suggestions and still shows Tailwind colors
 --   * every keymap the config defines has a description (which-key shows it)
 --   * the colorscheme setup leaves no global function and keeps the background transparent
+--   * the markdown preview server starts and answers (a test function replaces the browser)
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
 
 local STEP_PAUSE_MS = 150
 local STARTUP_TIMEOUT_MS = 10000
 local LSP_TIMEOUT_MS = 20000
+local PREVIEW_TIMEOUT_MS = 20000
 local CONFIG_DIR = vim.fn.getcwd()
 
 local SAMPLES = {
@@ -27,6 +29,8 @@ local SAMPLES = {
 	{ file = "sample.html", text = { "<div>hi</div>" }, servers = { "html" } },
 	{ file = "sample.css", text = { ".a { color: red; }" }, servers = { "cssls" } },
 }
+
+local MARKDOWN_SAMPLE = { file = "sample.md", text = { "# Preview test", "", "Hello." } }
 
 -- Servers that must never start: pylsp duplicates ruff, stylua is a formatter run by conform.
 local UNWANTED_SERVERS = { "pylsp", "stylua" }
@@ -129,6 +133,7 @@ local function write_samples(dir)
 	for _, sample in ipairs(SAMPLES) do
 		vim.fn.writefile(sample.text, dir .. "/" .. sample.file)
 	end
+	vim.fn.writefile(MARKDOWN_SAMPLE.text, dir .. "/" .. MARKDOWN_SAMPLE.file)
 end
 
 local function check_config_names()
@@ -367,6 +372,35 @@ local function check_colors_and_logs(channel)
 	)
 end
 
+local function check_markdown_preview(channel)
+	-- a test function takes the browser's place: it only records the preview URL
+	vim.rpcrequest(
+		channel,
+		"nvim_exec2",
+		table.concat({
+			"function! StartupTestBrowser(url)",
+			"  let g:startup_test_preview_url = a:url",
+			"endfunction",
+			"let g:mkdp_browserfunc = 'StartupTestBrowser'",
+		}, "\n"),
+		{}
+	)
+	vim.rpcrequest(channel, "nvim_command", "edit " .. MARKDOWN_SAMPLE.file)
+	vim.rpcrequest(channel, "nvim_command", "MarkdownPreview")
+	local url = ""
+	vim.wait(PREVIEW_TIMEOUT_MS, function()
+		url = remote_lua(channel, "return vim.g.startup_test_preview_url or ''")
+		return url ~= ""
+	end, 250)
+	local status = ""
+	if url ~= "" then
+		local result = vim.system({ "curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "5", url }):wait()
+		status = vim.trim(result.stdout or "")
+	end
+	pcall(vim.rpcrequest, channel, "nvim_command", "MarkdownPreviewStop")
+	check(status == "200", "markdown preview server starts and answers", ("url=%q http=%q"):format(url, status))
+end
+
 local function check_messages(channel)
 	local messages = vim.rpcrequest(channel, "nvim_exec2", "messages", { output = true }).output
 	local bad = {}
@@ -405,6 +439,7 @@ local function run()
 	check_completion_format(channel)
 	check_keymap_descriptions(channel)
 	check_colors_and_logs(channel)
+	check_markdown_preview(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)
