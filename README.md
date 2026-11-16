@@ -178,7 +178,7 @@ Gumagana ang `Control+Space` sa Neovim dahil naka-off sa Mac mo ang shortcut ng 
 
 | Plugin | Para saan |
 | --- | --- |
-| **nvim-lspconfig** | Nagbibigay ng handang setting para sa bawat "language server" (ang nagbibigay ng go to definition, error, rename, at iba pa). Pinapaandar ang mga ito gamit ang sariling `vim.lsp.config` / `vim.lsp.enable` ng Neovim 0.11. Naka-on para sa Python (`ruff`), JavaScript/TypeScript (`ts_ls`), HTML, CSS, Lua, at Tailwind. |
+| **nvim-lspconfig** | Nagbibigay ng handang setting para sa bawat "language server" (ang nagbibigay ng go to definition, error, rename, at iba pa). Pinapaandar ang mga ito gamit ang sariling `vim.lsp.config` / `vim.lsp.enable` ng Neovim (mula 0.11). Naka-on para sa Python (`ruff`), JavaScript/TypeScript (`ts_ls`), HTML, CSS, Lua, at Tailwind. |
 | **nvim-lsp-file-operations** | Tumutulong mag-update ng mga import kapag nag-rename ng file (gumagana lang kasama ng ilang file explorer plugin). |
 | **nvim-treesitter** | Nag-i-install ng mga parser (ang bumabasa ng istruktura ng code) at nagbibigay ng mas tamang indent. Ang kulay ng code at ang pagpili ayon sa bahagi nito ay gawa na ng Neovim 0.12 mismo, gamit ang mga parser na ito. Naka-`main` branch, ang bersyon para sa Neovim 0.12. Kailangan ng `tree-sitter-cli` para makapag-install ng parser (`brew install tree-sitter-cli`). |
 | **nvim-ts-autotag** | Sa HTML/JSX: kusang isinasara ang tag (`<div>` nagiging `<div></div>`), at kapag pinalitan ang pangalan ng bukas na tag, sumasabay ang pansara. |
@@ -354,7 +354,7 @@ Dito, iba ang gamit ng `Tab`: i-stage ang file na nakapili, o i-unstage kung nak
 | `Space rs` | I-restart ang language server kapag nagloloko |
 | `Control+o` | Bumalik sa dating lugar pagkatapos ng `gd` |
 
-**Kasama na sa Neovim 0.11** (gumagana rin sa file na may language server):
+**Kasama na sa Neovim (mula 0.11)** (gumagana rin sa file na may language server):
 
 | Shortcut | Gagawin |
 | --- | --- |
@@ -534,10 +534,10 @@ Gawa na ito ng Neovim 0.12 mismo. Pareho rin ang gawa ng `an` (palakihin) at `in
 | `Control+Space` | Insert mode | Ipakita ang mungkahi |
 | `Space rn` vs `Space rw` | Normal mode | `rn` ay rename gamit ang LSP (matalino); `rw` ay simpleng palit ng salita sa file |
 | `Control+s` | Normal mode | I-save |
-| `Control+s` | Insert mode | Ipakita ang parameters ng function (galing sa Neovim 0.11) |
+| `Control+s` | Insert mode | Ipakita ang parameters ng function (galing sa Neovim mismo) |
 | `gt` | Normal mode, file na may language server | Type definition. Sa ibang file, "susunod na tab" ito ng Vim; gamitin ang `Space tn` para sa tab. |
 | `gi` | Normal mode, file na may language server | Implementation. Sa ibang file, bumabalik ito sa huling tinype-an mo at nagsisimulang mag-type. |
-| `]t` / `[t` | Normal mode | Susunod / nakaraang TODO. Sa Neovim 0.11, para sana ito sa "tags". |
+| `]t` / `[t` | Normal mode | Susunod / nakaraang TODO. Sa Neovim mismo, para sana ito sa "tags". |
 
 ---
 
