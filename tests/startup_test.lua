@@ -8,6 +8,9 @@
 --   * the config files no longer use names that the plugins or Neovim deprecated
 --   * each language gets its language server exactly once, and no unwanted server runs
 --   * remapped keys work: ]d, gd, Visual J and K
+--   * treesitter highlights and indents each sample (a code block in markdown too),
+--     Control+Space / Backspace grow and shrink a selection, and the plugins that read the
+--     tree work: JSX comments with {/* */}, and a typed HTML tag gets its closing tag
 --   * a Python problem is reported once, not by two tools
 --   * completion shortens long suggestions and still shows Tailwind colors
 --   * every keymap the config defines has a description (which-key shows it)
@@ -21,6 +24,7 @@ local STARTUP_TIMEOUT_MS = 10000
 local LSP_TIMEOUT_MS = 20000
 local PREVIEW_TIMEOUT_MS = 20000
 local PICKER_TIMEOUT_MS = 5000
+local PARSER_TIMEOUT_MS = 5000
 local CONFIG_DIR = vim.fn.getcwd()
 
 local SAMPLES = {
@@ -33,6 +37,24 @@ local SAMPLES = {
 }
 
 local MARKDOWN_SAMPLE = { file = "sample.md", text = { "# Preview test", "", "Hello." } }
+
+-- A Lua code block inside markdown: on Neovim 0.12 the old nvim-treesitter master branch
+-- threw an error here and the file lost its highlighting.
+local FENCED_MARKDOWN_SAMPLE = { file = "fenced.md", text = { "# Code", "", "```lua", "local x = 1", "```" } }
+
+local TSX_SAMPLE = {
+	file = "sample.tsx",
+	text = { "const A = () => (", "  <div>", "    <p>hi</p>", "  </div>", ");" },
+}
+
+-- Files that must get treesitter highlighting; indent = true where nvim-treesitter indents.
+local TREESITTER_SAMPLES = {
+	{ file = "sample.lua", indent = true },
+	{ file = "sample.py", indent = true },
+	{ file = "sample.ts", indent = true },
+	{ file = "sample.html", indent = false },
+	{ file = FENCED_MARKDOWN_SAMPLE.file, indent = false },
+}
 
 -- Servers that must never start: pylsp duplicates ruff, stylua is a formatter run by conform.
 local UNWANTED_SERVERS = { "pylsp", "stylua" }
@@ -136,6 +158,8 @@ local function write_samples(dir)
 		vim.fn.writefile(sample.text, dir .. "/" .. sample.file)
 	end
 	vim.fn.writefile(MARKDOWN_SAMPLE.text, dir .. "/" .. MARKDOWN_SAMPLE.file)
+	vim.fn.writefile(FENCED_MARKDOWN_SAMPLE.text, dir .. "/" .. FENCED_MARKDOWN_SAMPLE.file)
+	vim.fn.writefile(TSX_SAMPLE.text, dir .. "/" .. TSX_SAMPLE.file)
 end
 
 -- A small git repo holding one modified file and one untracked file.
@@ -300,6 +324,116 @@ local function use_remapped_keys(channel)
 		"Visual K moves the selected line up",
 		table.concat(after_up, " / ")
 	)
+end
+
+local function treesitter_state(channel)
+	return remote_lua(
+		channel,
+		[[
+		local buf = vim.api.nvim_get_current_buf()
+		local injected = {}
+		local ok, err = pcall(function()
+			local parser = vim.treesitter.get_parser(buf)
+			parser:parse(true)
+			for lang in pairs(parser:children()) do
+				table.insert(injected, lang)
+			end
+		end)
+		return {
+			highlighted = vim.treesitter.highlighter.active[buf] ~= nil,
+			parse_error = ok and "" or tostring(err),
+			injected = injected,
+			indentexpr = vim.bo[buf].indentexpr,
+		}
+	]]
+	)
+end
+
+local function selected_text(channel)
+	return remote_lua(
+		channel,
+		[[
+		local mode = vim.fn.mode()
+		if not mode:match("^[vV\22]") then
+			return ""
+		end
+		return table.concat(vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = mode }), "\n")
+	]]
+	)
+end
+
+local function check_treesitter(channel)
+	for _, sample in ipairs(TREESITTER_SAMPLES) do
+		-- the Visual J/K check left sample.lua modified, and :edit of the current file refuses
+		remote_lua(channel, "if vim.fn.expand('%:t') ~= ... then vim.cmd.edit(...) end", { sample.file })
+		local state = treesitter_state(channel)
+		vim.wait(PARSER_TIMEOUT_MS, function()
+			state = treesitter_state(channel)
+			return state.highlighted
+		end, 100)
+		check(
+			state.highlighted and state.parse_error == "",
+			("treesitter highlights %s"):format(sample.file),
+			("highlighted=%s parse error=%s"):format(tostring(state.highlighted), state.parse_error)
+		)
+		if sample.indent then
+			check(
+				state.indentexpr:find("nvim.treesitter") ~= nil,
+				("treesitter indents %s"):format(sample.file),
+				("indentexpr=%q"):format(state.indentexpr)
+			)
+		end
+		if sample.file == FENCED_MARKDOWN_SAMPLE.file then
+			check(
+				vim.list_contains(state.injected, "lua"),
+				"the Lua code block in markdown gets the Lua parser",
+				("injected languages: %s"):format(table.concat(state.injected, ", "))
+			)
+		end
+	end
+
+	-- Control+Space starts a selection on the syntax node at the cursor and grows it;
+	-- Backspace shrinks it back
+	vim.rpcrequest(channel, "nvim_command", "buffer sample.lua")
+	remote_lua(channel, "vim.api.nvim_win_set_cursor(0, { 2, 6 })") -- the x in print(x)
+	press(channel, "<C-Space>")
+	local first = selected_text(channel)
+	press(channel, "<C-Space>")
+	local grown = selected_text(channel)
+	press(channel, "<BS>")
+	local shrunk = selected_text(channel)
+	press(channel, "<Esc>")
+	check(
+		first:find("x", 1, true) ~= nil,
+		"Control+Space selects the node at the cursor",
+		("selected=%q"):format(first)
+	)
+	check(
+		#grown > #first and grown:find(first, 1, true) ~= nil,
+		"Control+Space again grows the selection",
+		("first=%q then=%q"):format(first, grown)
+	)
+	check(shrunk == first, "Backspace shrinks the selection back", ("first=%q after=%q"):format(first, shrunk))
+
+	-- plugins that read the treesitter tree: nvim-ts-autotag and nvim-ts-context-commentstring
+	vim.rpcrequest(channel, "nvim_command", "edit " .. TSX_SAMPLE.file)
+	vim.wait(PARSER_TIMEOUT_MS, function()
+		return treesitter_state(channel).highlighted
+	end, 100)
+	remote_lua(channel, "vim.api.nvim_win_set_cursor(0, { 3, 4 })") -- the <p> line
+	press(channel, " /")
+	local commented = buffer_lines(channel)[3]
+	check(
+		commented == "    {/* <p>hi</p> */}",
+		"Space / comments a JSX line with {/* */}",
+		("line=%q"):format(commented)
+	)
+	press(channel, "u")
+	press(channel, "Go<lt>p>") -- <lt> is a typed "<"; nvim_input reads "<p>" as a key name
+	press(channel, "<Esc>")
+	local typed = buffer_lines(channel)
+	check(typed[#typed] == "<p></p>", "typing <p> adds the closing </p>", ("line=%q"):format(typed[#typed]))
+	press(channel, "u")
 end
 
 local function check_no_duplicate_diagnostics(channel)
@@ -530,6 +664,7 @@ local function run()
 	local channel = start_editor(sample_dir)
 	check_language_servers(channel)
 	use_remapped_keys(channel)
+	check_treesitter(channel)
 	check_no_duplicate_diagnostics(channel)
 	check_completion_format(channel)
 	check_keymap_descriptions(channel)

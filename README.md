@@ -1,6 +1,6 @@
 # Gabay sa Aking Neovim Setup
 
-Huling inayos: 2026-11-16. Neovim 0.11.6 (naka-install gamit ang Homebrew), sa MacBook Pro na may WezTerm na terminal.
+Huling inayos: 2026-11-16. Neovim 0.12.6 (naka-install gamit ang Homebrew), sa MacBook Pro na may WezTerm na terminal.
 
 Ito ang listahan ng lahat ng naka-install sa Neovim ko, kung para saan ang bawat isa, at lahat ng shortcut na dapat kong tandaan.
 
@@ -87,6 +87,7 @@ Tapos buksan ang `:Lazy` at pindutin ang `R`. Babalik ang lahat ng plugin sa dat
 | Command | Gagawin |
 | --- | --- |
 | `:TSUpdate` | Update ang Treesitter (ang tumutulong sa kulay ng code) |
+| `:TSInstall <wika>` | Mag-install ng Treesitter parser para sa wikang wala pa sa listahan, hal. `:TSInstall rust`. Hindi na ito kusang nangyayari sa pagbukas ng file. |
 | `:checkhealth` | Suriin kung may sira o kulang sa setup |
 | `brew upgrade neovim` (sa terminal, hindi sa loob ng Neovim) | Update ang Neovim mismo |
 
@@ -96,7 +97,7 @@ May dalawang test sa `tests/` na sumusuri kung buo pa ang setup. Patakbuhin sa t
 
 | Command | Sinusuri |
 | --- | --- |
-| `nvim --headless -l tests/startup_test.lua` | Tamang language server sa bawat wika (isa lang, walang doble), walang dobleng babala sa Python, gumagana ang `]d`, `gd`, Visual `J`/`K`, ang autocomplete at ang markdown preview, may paliwanag ang bawat shortcut, at walang error o babala sa pagbukas. Mga isang minuto ito. |
+| `nvim --headless -l tests/startup_test.lua` | Tamang language server sa bawat wika (isa lang, walang doble), walang dobleng babala sa Python, gumagana ang `]d`, `gd`, Visual `J`/`K`, ang autocomplete at ang markdown preview, may kulay ang code (pati code block sa markdown), gumagana ang `Control+Space`, ang pagsara ng HTML tag at ang comment sa JSX, may paliwanag ang bawat shortcut, at walang error o babala sa pagbukas. Mga isang minuto ito. |
 | `nvim --headless -l tests/snippet_jump_test.lua` | Gumagana ang `Tab` / `Shift+Tab` sa snippet, at lumalabas ang `K`, `J` at Space kapag sila ang unang tinype |
 
 Kapag walang `[FAIL]`, ayos ang lahat. Ang bawat `[FAIL]` ay nagsasabi kung ano ang mali.
@@ -179,7 +180,7 @@ Gumagana ang `Control+Space` sa Neovim dahil naka-off sa Mac mo ang shortcut ng 
 | --- | --- |
 | **nvim-lspconfig** | Nagbibigay ng handang setting para sa bawat "language server" (ang nagbibigay ng go to definition, error, rename, at iba pa). Pinapaandar ang mga ito gamit ang sariling `vim.lsp.config` / `vim.lsp.enable` ng Neovim 0.11. Naka-on para sa Python (`ruff`), JavaScript/TypeScript (`ts_ls`), HTML, CSS, Lua, at Tailwind. |
 | **nvim-lsp-file-operations** | Tumutulong mag-update ng mga import kapag nag-rename ng file (gumagana lang kasama ng ilang file explorer plugin). |
-| **nvim-treesitter** | Mas magandang kulay ng code, mas tamang indent, at pagpili ng code ayon sa bahagi nito. Naka-`master` branch, ang bersyon para sa Neovim 0.11. |
+| **nvim-treesitter** | Nag-i-install ng mga parser (ang bumabasa ng istruktura ng code) at nagbibigay ng mas tamang indent. Ang kulay ng code at ang pagpili ayon sa bahagi nito ay gawa na ng Neovim 0.12 mismo, gamit ang mga parser na ito. Naka-`main` branch, ang bersyon para sa Neovim 0.12. Kailangan ng `tree-sitter-cli` para makapag-install ng parser (`brew install tree-sitter-cli`). |
 | **nvim-ts-autotag** | Sa HTML/JSX: kusang isinasara ang tag (`<div>` nagiging `<div></div>`), at kapag pinalitan ang pangalan ng bukas na tag, sumasabay ang pansara. |
 | **nvim-ts-context-commentstring** | Tamang klase ng comment depende kung nasaan ka (halimbawa sa loob ng JSX). |
 
@@ -469,8 +470,10 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 
 | Shortcut | Gagawin |
 | --- | --- |
-| `Control+Space` (Normal mode) | Simulan pumili; pindutin ulit para lumaki ang napili (salita, tapos expression, tapos function...) |
-| `Delete` (⌫) | Paliitin ang napili |
+| `Control+Space` (Normal o Visual mode) | Simulan pumili; pindutin ulit para lumaki ang napili (salita, tapos expression, tapos function...) |
+| `Delete` (⌫) (Visual mode) | Paliitin ang napili, pabalik sa dating laki |
+
+Gawa na ito ng Neovim 0.12 mismo. Pareho rin ang gawa ng `an` (palakihin) at `in` (paliitin) sa Visual mode. Sa file na walang parser, walang mangyayari.
 
 ### Session (auto-session)
 
@@ -525,7 +528,7 @@ Ang test para dito: `nvim --headless -l tests/snippet_jump_test.lua` (patakbuhin
 | `K` | Visual mode | Itaas ang mga linya |
 | `Control+j` / `Control+k` | Normal mode | Lumipat ng window |
 | `Control+j` / `Control+k` | Insert mode na may mungkahi, o sa Telescope | Pumili sa listahan |
-| `Control+Space` | Normal mode | Treesitter na pagpili |
+| `Control+Space` | Normal o Visual mode | Treesitter na pagpili |
 | `Control+Space` | Insert mode | Ipakita ang mungkahi |
 | `Space rn` vs `Space rw` | Normal mode | `rn` ay rename gamit ang LSP (matalino); `rw` ay simpleng palit ng salita sa file |
 | `Control+s` | Normal mode | I-save |

@@ -38,6 +38,14 @@ key("n", "<C-u>", "<C-u>zz", { desc = "Half page up, cursor centered" })
 key("n", "n", "nzzzv", { desc = "Next search result, centered" })
 key("n", "N", "Nzzzv", { desc = "Previous search result, centered" })
 key("x", "<leader>p", [["_dP]], { desc = "Paste over selection, keep the copied text" })
+-- select by syntax node with Neovim 0.12's treesitter selection (the same as the built-in
+-- `an` / `in`); in a file without a parser these do nothing
+key({ "n", "x" }, "<C-Space>", function()
+	vim.treesitter.select("parent", vim.v.count1)
+end, { desc = "Select the syntax node at the cursor, or grow the selection" })
+key("x", "<BS>", function()
+	vim.treesitter.select("child", vim.v.count1)
+end, { desc = "Shrink the selection back to the smaller syntax node" })
 key(
 	"n",
 	"<leader>rw",
