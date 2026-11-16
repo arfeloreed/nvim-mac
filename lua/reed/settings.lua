@@ -43,6 +43,10 @@ opt.wrap = true -- enable wrapping
 -- ruler guide
 -- opt.colorcolumn = "100"
 
+-- command-line suggestions (shown while typing, see customs.lua): never pick the first
+-- one on its own, so the typed text stays; list buffers by last use
+opt.wildmode = "noselect:lastused,full"
+
 -- split windows
 opt.splitright = true -- split vertical window to the right
 opt.splitbelow = true -- split horizontal window to the bottom

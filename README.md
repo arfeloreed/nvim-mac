@@ -97,7 +97,7 @@ May dalawang test sa `tests/` na sumusuri kung buo pa ang setup. Patakbuhin sa t
 
 | Command | Sinusuri |
 | --- | --- |
-| `nvim --headless -l tests/startup_test.lua` | Tamang language server sa bawat wika (isa lang, walang doble), walang dobleng babala sa Python, gumagana ang `]d`, `gd`, Visual `J`/`K`, ang autocomplete at ang markdown preview, may kulay ang code (pati code block sa markdown), gumagana ang `Control+Space`, ang pagsara ng HTML tag at ang comment sa JSX, may paliwanag ang bawat shortcut, at walang error o babala sa pagbukas. Mga isang minuto ito. |
+| `nvim --headless -l tests/startup_test.lua` | Tamang language server sa bawat wika (isa lang, walang doble), walang dobleng babala sa Python, gumagana ang `]d`, `gd`, Visual `J`/`K`, ang autocomplete at ang markdown preview, may kulay ang code (pati code block sa markdown), gumagana ang `Control+Space`, ang pagsara ng HTML tag at ang comment sa JSX, kusang lumalabas ang mungkahi sa command line at sa paghahanap, may paliwanag ang bawat shortcut, at walang error o babala sa pagbukas. Mga isang minuto ito. |
 | `nvim --headless -l tests/snippet_jump_test.lua` | Gumagana ang `Tab` / `Shift+Tab` sa snippet, at lumalabas ang `K`, `J` at Space kapag sila ang unang tinype |
 
 Kapag walang `[FAIL]`, ayos ang lahat. Ang bawat `[FAIL]` ay nagsasabi kung ano ang mali.
@@ -529,6 +529,8 @@ Gawa na ito ng Neovim 0.12 mismo. Pareho rin ang gawa ng `an` (palakihin) at `in
 | `Control+j` / `Control+k` | Normal mode | Lumipat ng window |
 | `Control+j` / `Control+k` | Insert mode na may mungkahi, o sa Telescope | Pumili sa listahan |
 | `Control+Space` | Normal o Visual mode | Treesitter na pagpili |
+| `Tab` | Command line (`:`, `/`, `?`) | Piliin ang susunod na mungkahi sa listahan |
+| `Tab` | Insert mode | Tumalon sa susunod na bahagi ng snippet, o maglagay ng indent |
 | `Control+Space` | Insert mode | Ipakita ang mungkahi |
 | `Space rn` vs `Space rw` | Normal mode | `rn` ay rename gamit ang LSP (matalino); `rw` ay simpleng palit ng salita sa file |
 | `Control+s` | Normal mode | I-save |
@@ -548,6 +550,16 @@ Gawa na ito ng Neovim 0.12 mismo. Pareho rin ang gawa ng `an` (palakihin) at `in
 - Ang kinopya (`y`) ay napupunta rin sa clipboard ng Mac. Pwede itong i-paste sa ibang app, at ang kinopya sa ibang app ay pwedeng i-paste sa Neovim gamit ang `p`. Gumagana rin ang `Command+V` ng WezTerm.
 - Laging may 8 linya sa itaas at ibaba ng cursor habang nag-scroll.
 - Bumabalot ang mahahabang linya, at hanggang 80 letra ang lapad ng sinusulat.
+- Habang nagta-type ng command (`:`) o naghahanap (`/` o `?`), kusang lumalabas ang listahan ng mungkahi, hindi na kailangan ng `Tab`. Hindi nito pinapalitan ang tinype mo hangga't hindi ka pumipili. Gawa ito ng Neovim 0.12 mismo.
+
+  | Pindutin | Gagawin |
+  | --- | --- |
+  | `Tab` o `Control+n` | Piliin ang susunod na mungkahi |
+  | `Shift+Tab` o `Control+p` | Piliin ang nakaraang mungkahi |
+  | `Control+y` | Tanggapin ang napili at isara ang listahan |
+  | `Control+e` | Isara ang listahan at ibalik ang tinype mo |
+  | Arrow pataas / pababa | Nakaraan / susunod na command sa history, kahit bukas ang listahan |
+  | `Return` | Patakbuhin ang command |
 - Ang bagong hati ay lumalabas sa kanan o sa ibaba.
 - Walang swap file.
 - Sandaling kumikislap ang text na kinopya.

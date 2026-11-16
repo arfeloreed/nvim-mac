@@ -11,6 +11,8 @@
 --   * treesitter highlights and indents each sample (a code block in markdown too),
 --     Control+Space / Backspace grow and shrink a selection, and the plugins that read the
 --     tree work: JSX comments with {/* */}, and a typed HTML tag gets its closing tag
+--   * typing a command (:) or a search (/) shows suggestions without Tab, and Up still
+--     recalls command history
 --   * a Python problem is reported once, not by two tools
 --   * completion shortens long suggestions and still shows Tailwind colors
 --   * every keymap the config defines has a description (which-key shows it)
@@ -25,6 +27,7 @@ local LSP_TIMEOUT_MS = 20000
 local PREVIEW_TIMEOUT_MS = 20000
 local PICKER_TIMEOUT_MS = 5000
 local PARSER_TIMEOUT_MS = 5000
+local MENU_TIMEOUT_MS = 2000
 local CONFIG_DIR = vim.fn.getcwd()
 
 local SAMPLES = {
@@ -436,6 +439,54 @@ local function check_treesitter(channel)
 	press(channel, "u")
 end
 
+local function completion_menu_shown(channel)
+	return remote_lua(channel, "return vim.fn.pumvisible() == 1 or vim.fn.wildmenumode() == 1")
+end
+
+local function wait_for_completion_menu(channel)
+	local shown = false
+	vim.wait(MENU_TIMEOUT_MS, function()
+		shown = completion_menu_shown(channel)
+		return shown
+	end, 100)
+	return shown
+end
+
+local function command_line(channel)
+	return remote_lua(channel, "return vim.fn.getcmdline()")
+end
+
+local function check_cmdline_autocomplete(channel)
+	vim.rpcrequest(channel, "nvim_command", "buffer sample.lua")
+	press(channel, "<Esc>")
+	-- a command in the history for the Up check below
+	press(channel, ':echo "history check"<CR>')
+
+	press(channel, ":Tele")
+	local shown = wait_for_completion_menu(channel)
+	local typed = command_line(channel)
+	check(shown, "typing :Tele shows suggestions without pressing Tab", "no completion menu")
+	check(typed == "Tele", "the suggestions leave the typed command alone", ("command line=%q"):format(typed))
+
+	-- Up recalls the history entry that starts with the typed text, even with the menu open
+	-- (Neovim 0.12.6 does this itself; the <Up> remap in :help cmdline-autocompletion is not needed)
+	press(channel, "<C-u>ec")
+	wait_for_completion_menu(channel)
+	press(channel, "<Up>")
+	local recalled = command_line(channel)
+	check(
+		recalled == 'echo "history check"',
+		"Up still recalls command history while suggestions show",
+		("command line=%q"):format(recalled)
+	)
+	press(channel, "<Esc>")
+
+	press(channel, "/pri")
+	shown = wait_for_completion_menu(channel)
+	press(channel, "<Esc>")
+	check(shown, "typing a search shows suggestions from the file", "no completion menu")
+end
+
 local function check_no_duplicate_diagnostics(channel)
 	vim.rpcrequest(channel, "nvim_command", "edit sample.py")
 	vim.wait(LSP_TIMEOUT_MS, function()
@@ -665,6 +716,7 @@ local function run()
 	check_language_servers(channel)
 	use_remapped_keys(channel)
 	check_treesitter(channel)
+	check_cmdline_autocomplete(channel)
 	check_no_duplicate_diagnostics(channel)
 	check_completion_format(channel)
 	check_keymap_descriptions(channel)
