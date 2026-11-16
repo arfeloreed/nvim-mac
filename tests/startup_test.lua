@@ -11,6 +11,7 @@
 --   * a Python problem is reported once, not by two tools
 --   * completion shortens long suggestions and still shows Tailwind colors
 --   * every keymap the config defines has a description (which-key shows it)
+--   * Space gs lists a git repo's modified and untracked files
 --   * the colorscheme setup leaves no global function and keeps the background transparent
 --   * the markdown preview server starts and answers (a test function replaces the browser)
 --   * no warning or error shows up in :messages, and :checkhealth vim.deprecated is clean
@@ -19,6 +20,7 @@ local STEP_PAUSE_MS = 150
 local STARTUP_TIMEOUT_MS = 10000
 local LSP_TIMEOUT_MS = 20000
 local PREVIEW_TIMEOUT_MS = 20000
+local PICKER_TIMEOUT_MS = 5000
 local CONFIG_DIR = vim.fn.getcwd()
 
 local SAMPLES = {
@@ -134,6 +136,33 @@ local function write_samples(dir)
 		vim.fn.writefile(sample.text, dir .. "/" .. sample.file)
 	end
 	vim.fn.writefile(MARKDOWN_SAMPLE.text, dir .. "/" .. MARKDOWN_SAMPLE.file)
+end
+
+-- A small git repo holding one modified file and one untracked file.
+local function make_git_sample(dir)
+	vim.fn.mkdir(dir, "p")
+	vim.fn.writefile({ "first" }, dir .. "/tracked.txt")
+	local git = {
+		"git",
+		"-C",
+		dir,
+		"-c",
+		"user.name=startup-test",
+		"-c",
+		"user.email=startup-test@example.invalid",
+		"-c",
+		"commit.gpgsign=false",
+	}
+	for _, step in ipairs({
+		{ "init", "-q" },
+		{ "add", "tracked.txt" },
+		{ "commit", "-q", "--no-verify", "-m", "sample" },
+	}) do
+		local result = vim.system(vim.list_extend(vim.deepcopy(git), step)):wait()
+		assert(result.code == 0, ("git %s failed in %s: %s"):format(step[1], dir, result.stderr or ""))
+	end
+	vim.fn.writefile({ "changed" }, dir .. "/tracked.txt")
+	vim.fn.writefile({ "new" }, dir .. "/untracked.txt")
 end
 
 local function check_config_names()
@@ -346,6 +375,40 @@ local function check_keymap_descriptions(channel)
 	check(#missing == 0, "every keymap from the config has a description", "\n    " .. table.concat(missing, "\n    "))
 end
 
+local function check_git_status_key(channel, repo_dir, home_dir)
+	vim.rpcrequest(channel, "nvim_command", "cd " .. vim.fn.fnameescape(repo_dir))
+	press(channel, "<Space>gs")
+	local shown = {}
+	vim.wait(PICKER_TIMEOUT_MS, function()
+		shown = remote_lua(
+			channel,
+			[[
+			if vim.bo.filetype ~= "TelescopePrompt" then return { files = {} } end
+			local picker = require("telescope.actions.state").get_current_picker(vim.api.nvim_get_current_buf())
+			if not picker or not picker.manager then return { files = {} } end
+			local files = {}
+			for entry in picker.manager:iter() do
+				files[entry.value] = entry.status
+			end
+			return { title = picker.prompt_title, files = files }
+		]]
+		)
+		return shown.files["tracked.txt"] ~= nil and shown.files["untracked.txt"] ~= nil
+	end, 250)
+	press(channel, "<C-c>")
+	vim.rpcrequest(channel, "nvim_command", "cd " .. vim.fn.fnameescape(home_dir))
+
+	local files = shown.files or {}
+	local detail = ("title=%s tracked.txt=%q untracked.txt=%q"):format(
+		tostring(shown.title),
+		tostring(files["tracked.txt"]),
+		tostring(files["untracked.txt"])
+	)
+	check(shown.title == "Git Status", "Space gs opens the git status list", detail)
+	check(files["tracked.txt"] == " M", "the git status list shows a modified file", detail)
+	check(files["untracked.txt"] == "??", "the git status list shows an untracked file", detail)
+end
+
 local function check_colors_and_logs(channel)
 	local state = remote_lua(
 		channel,
@@ -431,6 +494,8 @@ local function run()
 	local sample_dir = vim.fn.tempname()
 	vim.fn.mkdir(sample_dir, "p")
 	write_samples(sample_dir)
+	local git_dir = vim.fn.tempname()
+	make_git_sample(git_dir)
 
 	local channel = start_editor(sample_dir)
 	check_language_servers(channel)
@@ -438,12 +503,14 @@ local function run()
 	check_no_duplicate_diagnostics(channel)
 	check_completion_format(channel)
 	check_keymap_descriptions(channel)
+	check_git_status_key(channel, git_dir, sample_dir)
 	check_colors_and_logs(channel)
 	check_markdown_preview(channel)
 	check_messages(channel)
 	check_deprecated_health(channel)
 	vim.fn.jobstop(channel)
 	vim.fn.delete(sample_dir, "rf")
+	vim.fn.delete(git_dir, "rf")
 
 	io.write(("[INFO] %s\n"):format(failures == 0 and "all checks passed" or (failures .. " checks failed")))
 	os.exit(failures == 0 and 0 or 1)

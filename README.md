@@ -305,6 +305,7 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 | `Space fb` | Hanapin sa mga file na bukas na |
 | `Space fh` | Hanapin sa help ng Neovim |
 | `Space ft` | Hanapin lahat ng `TODO`, `FIX` at iba pa |
+| `Space gs` | Ipakita ang mga file na nabago o hindi pa nata-track ng git (tingnan sa ibaba) |
 
 **Habang nakabukas ang Telescope popup:**
 
@@ -322,6 +323,17 @@ Galing ito sa `lua/reed/keymaps.lua`. Lahat ay sa Normal mode maliban kung nakas
 | `Control+/` | Ipakita ang lahat ng shortcut sa popup |
 | `Esc` | Lumipat sa Normal mode sa loob ng popup (pindutin ulit para isara) |
 | `Control+c` | Isara agad |
+
+**Sa listahan ng `Space gs` (git status):** may tanda sa tabi ng bawat file. Sa kanan, makikita kung ano ang nabago sa file na nakapili.
+
+| Tanda | Ibig sabihin |
+| --- | --- |
+| `~` | Nabago ang file |
+| `+` | Bagong file na naidagdag na sa git |
+| `?` | Hindi pa nata-track ng git |
+| `-` | Binura ang file |
+
+Dito, iba ang gamit ng `Tab`: i-stage ang file na nakapili, o i-unstage kung naka-stage na. `Return` para buksan ang file.
 
 ### LSP (gumagana lang kapag may language server sa file)
 

@@ -38,5 +38,6 @@ return {
 		vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Find files in buffers" })
 		vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Show help" })
 		vim.keymap.set("n", "<leader>ft", "<cmd>TodoTelescope<cr>", { desc = "Find todos" })
+		vim.keymap.set("n", "<leader>gs", builtin.git_status, { desc = "Show changed and untracked git files" })
 	end,
 }
