@@ -216,6 +216,23 @@ local function check_language_servers(channel)
 	end
 end
 
+local function diagnostic_float_shown(channel)
+	return remote_lua(
+		channel,
+		[[
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			if vim.api.nvim_win_get_config(win).relative ~= "" then
+				local lines = vim.api.nvim_buf_get_lines(vim.api.nvim_win_get_buf(win), 0, -1, false)
+				if table.concat(lines, "\n"):find("test diagnostic", 1, true) then
+					return true
+				end
+			end
+		end
+		return false
+	]]
+	)
+end
+
 local function use_remapped_keys(channel)
 	vim.rpcrequest(channel, "nvim_command", "edit sample.lua")
 	-- yank highlight (TextYankPost autocmd)
@@ -234,8 +251,21 @@ local function use_remapped_keys(channel)
 	press(channel, "]d")
 	local line_after_next = remote_lua(channel, "return vim.api.nvim_win_get_cursor(0)[1]")
 	check(line_after_next == 2, "]d moves to the next diagnostic", ("cursor line=%s"):format(line_after_next))
+	check(diagnostic_float_shown(channel), "]d shows the diagnostic in a floating window", "no float with the message")
 	press(channel, "<Esc>")
+	-- close the float from ]d so the next check sees only the one [d opens
+	remote_lua(
+		channel,
+		[[
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			if vim.api.nvim_win_get_config(win).relative ~= "" then
+				vim.api.nvim_win_close(win, true)
+			end
+		end
+	]]
+	)
 	press(channel, "[d")
+	check(diagnostic_float_shown(channel), "[d shows the diagnostic in a floating window", "no float with the message")
 	press(channel, "<Esc>")
 
 	-- gd goes through Telescope's LSP picker (the 0.1.x picker warned on Neovim 0.11).

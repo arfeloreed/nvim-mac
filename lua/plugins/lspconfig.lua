@@ -12,6 +12,13 @@ return {
 
 		local keymap = vim.keymap -- for conciseness
 
+		-- what the `float = true` jump option did before Neovim 0.12 deprecated it
+		local function show_float_on_jump(diagnostic, bufnr)
+			if diagnostic then
+				vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+			end
+		end
+
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup("UserLspConfig", {}),
 			callback = function(ev)
@@ -49,12 +56,12 @@ return {
 
 				opts.desc = "Go to previous diagnostic"
 				keymap.set("n", "[d", function()
-					vim.diagnostic.jump({ count = -1, float = true })
+					vim.diagnostic.jump({ count = -1, on_jump = show_float_on_jump })
 				end, opts) -- jump to previous diagnostic in buffer
 
 				opts.desc = "Go to next diagnostic"
 				keymap.set("n", "]d", function()
-					vim.diagnostic.jump({ count = 1, float = true })
+					vim.diagnostic.jump({ count = 1, on_jump = show_float_on_jump })
 				end, opts) -- jump to next diagnostic in buffer
 
 				opts.desc = "Show documentation for what is under cursor"
